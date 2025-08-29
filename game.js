@@ -30,10 +30,10 @@ const player = {
     width: PLAYER_WIDTH,
     height: PLAYER_HEIGHT,
     color: '#fff',
-    speed: INITIAL_PLAYER_SPEED,
     activePowerUps: {
         hasMissile: false,
-        shotType: 'normal' // 'normal', 'double', 'laser'
+        shotType: 'normal', // 'normal', 'double', 'laser'
+        speedLevel: 0
     }
 };
 
@@ -48,7 +48,7 @@ const missiles = [];
 const laserPoints = [];
 let lastShotTime = 0;
 const shotDelay = 200;
-const laserPointDelay = 16; // approx 60fps
+const laserPointDelay = 16;
 
 function fireNormalAndDouble() {
     const now = Date.now();
@@ -72,7 +72,7 @@ function fireLaser() {
     lastShotTime = now;
     laserPoints.push({ x: player.x + player.width, y: player.y + player.height / 2 });
     if (player.activePowerUps.hasMissile) {
-        if (missiles.length === 0 || now - lastShotTime > shotDelay) { // Rate limit missiles with laser
+        if (missiles.length === 0 || now - lastShotTime > shotDelay) {
              missiles.push({ x: player.x + player.width / 2, y: player.y + player.height, width: 10, height: 10, color: '#f0e68c' });
         }
     }
@@ -151,7 +151,7 @@ function activatePowerUp(index) {
     const powerUpName = powerUpMeter[index];
     console.log(`${powerUpName} activated!`);
     switch (powerUpName) {
-        case 'SPEED UP': player.speed += 1; break;
+        case 'SPEED UP': player.activePowerUps.speedLevel++; break;
         case 'MISSILE': player.activePowerUps.hasMissile = true; break;
         case 'DOUBLE': player.activePowerUps.shotType = 'double'; break;
         case 'LASER': player.activePowerUps.shotType = 'laser'; break;
@@ -166,8 +166,6 @@ function drawLaserTrails() {
     if (laserPoints.length < 2) return;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-
-    // 外側の光
     ctx.strokeStyle = 'rgba(137, 207, 240, 0.5)';
     ctx.lineWidth = 7;
     ctx.beginPath();
@@ -176,15 +174,9 @@ function drawLaserTrails() {
         const p1 = laserPoints[i-1];
         const p2 = laserPoints[i];
         const distance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-        if (distance > 100) {
-            ctx.moveTo(p2.x, p2.y);
-        } else {
-            ctx.lineTo(p2.x, p2.y);
-        }
+        if (distance > 100) { ctx.moveTo(p2.x, p2.y); } else { ctx.lineTo(p2.x, p2.y); }
     }
     ctx.stroke();
-
-    // 中心のコア
     ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -193,11 +185,7 @@ function drawLaserTrails() {
         const p1 = laserPoints[i-1];
         const p2 = laserPoints[i];
         const distance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-        if (distance > 100) {
-            ctx.moveTo(p2.x, p2.y);
-        } else {
-            ctx.lineTo(p2.x, p2.y);
-        }
+        if (distance > 100) { ctx.moveTo(p2.x, p2.y); } else { ctx.lineTo(p2.x, p2.y); }
     }
     ctx.stroke();
 }
@@ -213,7 +201,7 @@ function drawPowerUpMeter() {
         ctx.strokeRect(boxX, meterY, 85, 25);
         let displayName = name;
         let isActive = false;
-        if (name === 'SPEED UP' && player.speed > INITIAL_PLAYER_SPEED) { isActive = true; displayName = `SPEED ${player.speed - INITIAL_PLAYER_SPEED}`; }
+        if (name === 'SPEED UP' && player.activePowerUps.speedLevel > 0) { isActive = true; displayName = `SPEED ${player.activePowerUps.speedLevel}`; }
         else if (name === 'MISSILE' && player.activePowerUps.hasMissile) { isActive = true; }
         else if (name === 'DOUBLE' && player.activePowerUps.shotType === 'double') { isActive = true; }
         else if (name === 'LASER' && player.activePowerUps.shotType === 'laser') { isActive = true; }
@@ -225,10 +213,11 @@ function drawPowerUpMeter() {
 // --- ゲームループ ---
 function gameLoop() {
     // 更新処理
-    if (keys.ArrowUp && player.y > 0) player.y -= player.speed;
-    if (keys.ArrowDown && player.y < canvas.height - player.height) player.y += player.speed;
-    if (keys.ArrowLeft && player.x > 0) player.x -= player.speed;
-    if (keys.ArrowRight && player.x < canvas.width - player.width) player.x += player.speed;
+    const currentSpeed = INITIAL_PLAYER_SPEED + player.activePowerUps.speedLevel;
+    if (keys.ArrowUp && player.y > 0) player.y -= currentSpeed;
+    if (keys.ArrowDown && player.y < canvas.height - player.height) player.y += currentSpeed;
+    if (keys.ArrowLeft && player.x > 0) player.x -= currentSpeed;
+    if (keys.ArrowRight && player.x < canvas.width - player.width) player.x += currentSpeed;
     
     if (keys[' ']) {
         if (player.activePowerUps.shotType === 'laser') {
