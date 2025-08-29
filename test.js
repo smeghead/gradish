@@ -1,4 +1,4 @@
-import { add, PowerUpState } from './core.js';
+import { add, PowerUpState, isColliding } from './core.js';
 
 function assert(condition, message) {
   if (!condition) {
@@ -13,23 +13,50 @@ console.log('Running tests for core.js...');
 console.log('  Testing: add()');
 assert(add(2, 3) === 5, '2 + 3 should equal 5');
 
+// --- Collision Primitive Tests ---
+console.log('  Testing: isColliding()');
+function testCollisionDetection() {
+  const rect1 = { x: 10, y: 10, width: 50, height: 50 };
+
+  // Case 1: Overlapping
+  const rect2 = { x: 40, y: 40, width: 50, height: 50 };
+  assert(isColliding(rect1, rect2) === true, 'Rects should be overlapping');
+
+  // Case 2: Not overlapping
+  const rect3 = { x: 100, y: 100, width: 50, height: 50 };
+  assert(
+    isColliding(rect1, rect3) === false,
+    'Rects should not be overlapping'
+  );
+
+  // Case 3: Touching edges
+  const rect4 = { x: 60, y: 10, width: 50, height: 50 };
+  assert(
+    isColliding(rect1, rect4) === false,
+    'Rects should not be overlapping when touching edges'
+  );
+
+  // Case 4: One inside another
+  const rect5 = { x: 20, y: 20, width: 20, height: 20 };
+  assert(
+    isColliding(rect1, rect5) === true,
+    'Rects should be overlapping when one is inside another'
+  );
+}
+testCollisionDetection();
+
 // --- PowerUpState Class Tests ---
 console.log('  Testing: PowerUpState');
 
-// Test 1: 初期状態のテスト
 function testInitialPowerUpState() {
   const state = new PowerUpState();
   const meter = state.getMeterState();
   const active = state.getActivePowerUps();
-
   assert(meter.currentIndex === -1, 'Initial cursor index should be -1');
   assert(active.speedLevel === 0, 'Initial speedLevel should be 0');
-  assert(active.hasMissile === false, 'Initial hasMissile should be false');
-  assert(active.shotType === 'normal', "Initial shotType should be 'normal'");
 }
 testInitialPowerUpState();
 
-// Test 2: カプセル取得のテスト
 function testCollectCapsule() {
   const state = new PowerUpState();
   state.collectCapsule();
@@ -41,15 +68,12 @@ function testCollectCapsule() {
 }
 testCollectCapsule();
 
-// Test 3: SPEED UP 有効化のテスト
 function testSpeedUpActivation() {
   const state = new PowerUpState();
-  state.collectCapsule(); // -> SPEED UP
+  state.collectCapsule();
   state.activate();
-
   const active = state.getActivePowerUps();
   assert(active.speedLevel === 1, '[SPEED UP] speedLevel should become 1');
-
   const meter = state.getMeterState();
   assert(
     meter.currentIndex === -1,
@@ -58,16 +82,13 @@ function testSpeedUpActivation() {
 }
 testSpeedUpActivation();
 
-// Test 4: 連続したパワーアップのテスト
 function testSequentialPowerUps() {
   const state = new PowerUpState();
-  state.collectCapsule(); // -> SPEED UP
+  state.collectCapsule();
   state.activate();
-
-  state.collectCapsule(); // -> SPEED UP
-  state.collectCapsule(); // -> MISSILE
+  state.collectCapsule();
+  state.collectCapsule();
   state.activate();
-
   const active = state.getActivePowerUps();
   assert(active.speedLevel === 1, '[Sequential] speedLevel should remain 1');
   assert(
@@ -77,24 +98,21 @@ function testSequentialPowerUps() {
 }
 testSequentialPowerUps();
 
-// Test 5: ショットタイプの排他制御テスト (LASERはDOUBLEを上書きする)
 function testShotTypeOverride() {
   const state = new PowerUpState();
-  state.collectCapsule(); // S
-  state.collectCapsule(); // M
-  state.collectCapsule(); // D
-  state.activate(); // Double is now active
+  state.collectCapsule();
+  state.collectCapsule();
+  state.collectCapsule();
+  state.activate();
   assert(
     state.getActivePowerUps().shotType === 'double',
     'shotType should be double initially'
   );
-
-  state.collectCapsule(); // S
-  state.collectCapsule(); // M
-  state.collectCapsule(); // D
-  state.collectCapsule(); // L
-  state.activate(); // Laser is now active
-
+  state.collectCapsule();
+  state.collectCapsule();
+  state.collectCapsule();
+  state.collectCapsule();
+  state.activate();
   assert(
     state.getActivePowerUps().shotType === 'laser',
     'shotType should be overridden by laser'

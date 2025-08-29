@@ -1,4 +1,4 @@
-import { PowerUpState } from './core.js';
+import { PowerUpState, isColliding } from './core.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -149,16 +149,12 @@ function spawnPowerUpCapsule(x, y) {
 }
 
 function checkCollisions() {
+  // 弾と敵
   for (let i = bullets.length - 1; i >= 0; i--) {
     for (let j = enemies.length - 1; j >= 0; j--) {
       const bullet = bullets[i];
       const enemy = enemies[j];
-      if (
-        bullet.x < enemy.x + enemy.width &&
-        bullet.x + bullet.width > enemy.x &&
-        bullet.y < enemy.y + enemy.height &&
-        bullet.y + bullet.height > enemy.y
-      ) {
+      if (isColliding(bullet, enemy)) {
         enemies.splice(j, 1);
         bullets.splice(i, 1);
         enemiesDestroyedSinceLastCapsule++;
@@ -170,22 +166,19 @@ function checkCollisions() {
       }
     }
   }
+  // ミサイルと敵
   for (let i = missiles.length - 1; i >= 0; i--) {
     for (let j = enemies.length - 1; j >= 0; j--) {
       const missile = missiles[i];
       const enemy = enemies[j];
-      if (
-        missile.x < enemy.x + enemy.width &&
-        missile.x + missile.width > enemy.x &&
-        missile.y < enemy.y + enemy.height &&
-        missile.y + missile.height > enemy.y
-      ) {
+      if (isColliding(missile, enemy)) {
         enemies.splice(j, 1);
         missiles.splice(i, 1);
         break;
       }
     }
   }
+  // レーザーと敵
   for (let i = laserPoints.length - 1; i >= 0; i--) {
     const point = laserPoints[i];
     const hitBox = {
@@ -196,12 +189,7 @@ function checkCollisions() {
     };
     for (let j = enemies.length - 1; j >= 0; j--) {
       const enemy = enemies[j];
-      if (
-        hitBox.x < enemy.x + enemy.width &&
-        hitBox.x + hitBox.width > enemy.x &&
-        hitBox.y < enemy.y + enemy.height &&
-        hitBox.y + hitBox.height > enemy.y
-      ) {
+      if (isColliding(hitBox, enemy)) {
         enemies.splice(j, 1);
         enemiesDestroyedSinceLastCapsule++;
         if (enemiesDestroyedSinceLastCapsule >= CAPSULE_DROP_RATE) {
@@ -211,14 +199,10 @@ function checkCollisions() {
       }
     }
   }
+  // プレイヤーとカプセル
   for (let i = powerUpCapsules.length - 1; i >= 0; i--) {
     const capsule = powerUpCapsules[i];
-    if (
-      player.x < capsule.x + capsule.width &&
-      player.x + player.width > capsule.x &&
-      player.y < capsule.y + capsule.height &&
-      player.y + player.height > capsule.y
-    ) {
+    if (isColliding(player, capsule)) {
       powerUpCapsules.splice(i, 1);
       powerUpState.collectCapsule();
     }
@@ -234,6 +218,7 @@ function handlePowerUpActivation() {
   }
 }
 
+// --- 描画関数群 ---
 function drawPlayer() {
   ctx.fillStyle = player.color;
   ctx.beginPath();
@@ -250,6 +235,7 @@ function drawBullets() {
     ctx.fillRect(b.x, b.y, b.width, b.height);
   });
 }
+
 function drawMissiles() {
   missiles.forEach((m) => {
     ctx.fillStyle = m.color;
@@ -258,6 +244,7 @@ function drawMissiles() {
     ctx.fill();
   });
 }
+
 function drawLaserTrails() {
   if (laserPoints.length < 2) return;
   ctx.lineCap = 'round';
@@ -293,12 +280,14 @@ function drawLaserTrails() {
   }
   ctx.stroke();
 }
+
 function drawEnemies() {
   enemies.forEach((enemy) => {
     ctx.fillStyle = enemy.color;
     ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
   });
 }
+
 function drawPowerUpCapsules() {
   powerUpCapsules.forEach((capsule) => {
     ctx.fillStyle = capsule.color;
@@ -307,6 +296,7 @@ function drawPowerUpCapsules() {
     ctx.fillText('P', capsule.x + 6, capsule.y + 14);
   });
 }
+
 function updateAndDrawStars() {
   ctx.fillStyle = '#fff';
   stars.forEach((star) => {
@@ -376,33 +366,33 @@ function gameLoop() {
 
   handlePowerUpActivation();
 
-  bullets.forEach((b, i) => {
+  bullets.forEach((b) => {
     b.x += b.dx;
     b.y += b.dy;
-    if (b.x > canvas.width) bullets.splice(i, 1);
+    if (b.x > canvas.width) bullets.splice(bullets.indexOf(b), 1);
   });
-  missiles.forEach((m, i) => {
+  missiles.forEach((m) => {
     m.x += MISSILE_SPEED;
     m.y += MISSILE_SPEED / 2;
-    if (m.x > canvas.width || m.y > canvas.height) missiles.splice(i, 1);
+    if (m.x > canvas.width || m.y > canvas.height)
+      missiles.splice(missiles.indexOf(m), 1);
   });
-  laserPoints.forEach((p, i) => {
+  laserPoints.forEach((p) => {
     p.x += BULLET_SPEED;
-    if (p.x > canvas.width) laserPoints.splice(i, 1);
+    if (p.x > canvas.width) laserPoints.splice(laserPoints.indexOf(p), 1);
   });
-  enemies.forEach((e, i) => {
+  enemies.forEach((e) => {
     e.x -= ENEMY_SPEED;
-    if (e.x + e.width < 0) enemies.splice(i, 1);
+    if (e.x + e.width < 0) enemies.splice(enemies.indexOf(e), 1);
   });
-  powerUpCapsules.forEach((c, i) => {
+  powerUpCapsules.forEach((c) => {
     c.x -= ENEMY_SPEED;
-    if (c.x < 0) powerUpCapsules.splice(i, 1);
+    if (c.x < 0) powerUpCapsules.splice(powerUpCapsules.indexOf(c), 1);
   });
 
   spawnEnemy();
   checkCollisions();
 
-  // 描画処理
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   updateAndDrawStars();
   drawPlayer();
