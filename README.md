@@ -1,7 +1,5 @@
 # tetris
 
-
-
 ## Development
 
 ```bash

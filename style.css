@@ -1,14 +1,14 @@
 body {
-    background-color: #202020;
-    color: #fff;
-    text-align: center;
-    font-family: 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
-    margin: 0;
-    padding: 1rem;
+  background-color: #202020;
+  color: #fff;
+  text-align: center;
+  font-family: 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
+  margin: 0;
+  padding: 1rem;
 }
 
 canvas {
-    background-color: #000;
-    border: 2px solid #fff;
-    box-shadow: 0 0 15px #fff;
+  background-color: #000;
+  border: 2px solid #fff;
+  box-shadow: 0 0 15px #fff;
 }
