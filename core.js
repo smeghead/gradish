@@ -23,6 +23,24 @@ export function isColliding(rect1, rect2) {
   );
 }
 
+/**
+ * 2つのオブジェクト配列間で衝突を検出し、衝突したペアのリストを返す
+ * @param {Array<Object>} arr1 最初のオブジェクト配列
+ * @param {Array<Object>} arr2 2番目のオブジェクト配列
+ * @param {(obj1: Object, obj2: Object, index1: number, index2: number) => void} 衝突したペアを引数に呼び出されるcallback関数
+ */
+export function findCollisions(arr1, arr2, callback) {
+  const collisions = [];
+  for (let i = arr1.length - 1; i >= 0; i--) {
+    for (let j = arr2.length - 1; j >= 0; j--) {
+      if (isColliding(arr1[i], arr2[j])) {
+        callback(arr1[i], arr2[j], i, j);
+        break;
+      }
+    }
+  }
+}
+
 export class PowerUpState {
   #meter = ['SPEED UP', 'MISSILE', 'DOUBLE', 'LASER', 'OPTION', 'SHIELD'];
   #cursorIndex = -1;

@@ -1,4 +1,4 @@
-import { PowerUpState, isColliding } from './core.js';
+import { PowerUpState, isColliding, findCollisions } from './core.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -150,63 +150,52 @@ function spawnPowerUpCapsule(x, y) {
 
 function checkCollisions() {
   // 弾と敵
-  for (let i = bullets.length - 1; i >= 0; i--) {
-    for (let j = enemies.length - 1; j >= 0; j--) {
-      const bullet = bullets[i];
-      const enemy = enemies[j];
-      if (isColliding(bullet, enemy)) {
-        enemies.splice(j, 1);
-        bullets.splice(i, 1);
-        enemiesDestroyedSinceLastCapsule++;
-        if (enemiesDestroyedSinceLastCapsule >= CAPSULE_DROP_RATE) {
-          spawnPowerUpCapsule(enemy.x, enemy.y);
-          enemiesDestroyedSinceLastCapsule = 0;
-        }
-        break;
-      }
+  findCollisions(bullets, enemies, (bullet, enemy, bulletIndex, enemyIndex) => {
+    enemies.splice(enemyIndex, 1);
+    bullets.splice(bulletIndex, 1);
+    enemiesDestroyedSinceLastCapsule++;
+    if (enemiesDestroyedSinceLastCapsule >= CAPSULE_DROP_RATE) {
+      spawnPowerUpCapsule(enemy.x, enemy.y);
+      enemiesDestroyedSinceLastCapsule = 0;
     }
-  }
+  });
   // ミサイルと敵
-  for (let i = missiles.length - 1; i >= 0; i--) {
-    for (let j = enemies.length - 1; j >= 0; j--) {
-      const missile = missiles[i];
-      const enemy = enemies[j];
-      if (isColliding(missile, enemy)) {
-        enemies.splice(j, 1);
-        missiles.splice(i, 1);
-        break;
-      }
+  findCollisions(
+    missiles,
+    enemies,
+    (missile, enemy, missileIndex, enemyIndex) => {
+      enemies.splice(enemyIndex, 1);
+      missiles.splice(missileIndex, 1);
     }
-  }
+  );
   // レーザーと敵
-  for (let i = laserPoints.length - 1; i >= 0; i--) {
-    const point = laserPoints[i];
-    const hitBox = {
-      x: point.x,
-      y: point.y - 3,
-      width: BULLET_SPEED,
-      height: 6,
-    };
-    for (let j = enemies.length - 1; j >= 0; j--) {
-      const enemy = enemies[j];
-      if (isColliding(hitBox, enemy)) {
-        enemies.splice(j, 1);
-        enemiesDestroyedSinceLastCapsule++;
-        if (enemiesDestroyedSinceLastCapsule >= CAPSULE_DROP_RATE) {
-          spawnPowerUpCapsule(enemy.x, enemy.y);
-          enemiesDestroyedSinceLastCapsule = 0;
-        }
+  const hitBoxes = laserPoints.map((point) => ({
+    x: point.x,
+    y: point.y - 3,
+    width: BULLET_SPEED,
+    height: 6,
+  }));
+  findCollisions(
+    hitBoxes,
+    enemies,
+    (hitBox, enemy, hitBoxIndex, enemyIndex) => {
+      enemies.splice(enemyIndex, 1);
+      enemiesDestroyedSinceLastCapsule++;
+      if (enemiesDestroyedSinceLastCapsule >= CAPSULE_DROP_RATE) {
+        spawnPowerUpCapsule(enemy.x, enemy.y);
+        enemiesDestroyedSinceLastCapsule = 0;
       }
     }
-  }
+  );
   // プレイヤーとカプセル
-  for (let i = powerUpCapsules.length - 1; i >= 0; i--) {
-    const capsule = powerUpCapsules[i];
-    if (isColliding(player, capsule)) {
-      powerUpCapsules.splice(i, 1);
+  findCollisions(
+    [player],
+    powerUpCapsules,
+    (p, powerUpCapsule, pIndex, powerUpCapsuleIndex) => {
+      powerUpCapsules.splice(powerUpCapsuleIndex, 1);
       powerUpState.collectCapsule();
     }
-  }
+  );
 }
 
 function handlePowerUpActivation() {
