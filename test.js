@@ -188,4 +188,31 @@ function testShotTypeOverride() {
 }
 testShotTypeOverride();
 
+function testOptionActivation() {
+  console.log('  Testing: OPTION activation');
+  const state = new PowerUpState();
+  // 'OPTION' is the 5th item (index 4)
+  for (let i = 0; i < 5; i++) {
+    state.collectCapsule();
+  }
+  state.activate();
+  const active = state.getActivePowerUps();
+  assert(active.optionCount === 1, '[OPTION] optionCount should become 1');
+  assert(
+    state.getMeterState().currentIndex === -1,
+    '[OPTION] Cursor should reset after activation'
+  );
+
+  // 2つ目のオプションを取得
+  for (let i = 0; i < 5; i++) {
+    state.collectCapsule();
+  }
+  state.activate();
+  assert(
+    state.getActivePowerUps().optionCount === 2,
+    '[OPTION] optionCount should become 2'
+  );
+}
+testOptionActivation();
+
 console.log('✅ All tests passed!');

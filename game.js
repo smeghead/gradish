@@ -30,6 +30,8 @@ const missiles = [];
 const laserPoints = [];
 const enemies = [];
 const stars = [];
+const options = [];
+const playerHistory = [];
 const keys = {
   ArrowUp: false,
   ArrowDown: false,
@@ -107,6 +109,32 @@ function fireNormalAndDouble(activePowerUps) {
       color: '#f0e68c',
     });
   }
+
+  // オプションから発射
+  options.forEach((option) => {
+    if (shotType === 'normal' || shotType === 'double') {
+      bullets.push({
+        x: option.x + option.width,
+        y: option.y - 2, // y座標を微調整
+        width: 15,
+        height: 4,
+        color: '#ff4500',
+        dx: BULLET_SPEED,
+        dy: 0,
+      });
+    }
+    if (shotType === 'double') {
+      bullets.push({
+        x: option.x + option.width,
+        y: option.y - 2, // y座標を微調整
+        width: 15,
+        height: 4,
+        color: '#ff9900',
+        dx: BULLET_SPEED * 0.9,
+        dy: -BULLET_SPEED * 0.4,
+      });
+    }
+  });
 }
 
 function fireLaser(activePowerUps) {
@@ -116,6 +144,14 @@ function fireLaser(activePowerUps) {
   laserPoints.push({
     x: player.x + player.width,
     y: player.y + player.height / 2,
+  });
+
+  // オプションからレーザー
+  options.forEach((option) => {
+    laserPoints.push({
+      x: option.x + option.width,
+      y: option.y,
+    });
   });
   if (activePowerUps.hasMissile) {
     if (missiles.length === 0 || now - lastShotTime > shotDelay) {
@@ -216,6 +252,32 @@ function drawPlayer() {
   ctx.lineTo(player.x + player.width, player.y + player.height / 2);
   ctx.closePath();
   ctx.fill();
+}
+
+function drawOptions() {
+  options.forEach((option) => {
+    ctx.fillStyle = '#93f2fa'; // 明るいシアン
+    ctx.beginPath();
+    ctx.arc(
+      option.x + option.width / 2,
+      option.y,
+      option.width / 2,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+    // 内側の白い輝き
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.beginPath();
+    ctx.arc(
+      option.x + option.width / 2,
+      option.y,
+      option.width / 4,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+  });
 }
 
 function drawBullets() {
@@ -334,7 +396,31 @@ function drawPowerUpMeter() {
 
 // --- ゲームループ ---
 function gameLoop() {
+  // --- 履歴とオプションの管理 ---
+  playerHistory.unshift({ x: player.x, y: player.y });
+  const OPTION_DELAY = 15; // オプション間の遅延フレーム
   const activePowerUps = powerUpState.getActivePowerUps();
+
+  // 有効なオプションの数に合わせて `options` 配列を調整
+  if (options.length < activePowerUps.optionCount) {
+    options.push({ x: player.x, y: player.y, width: 12, height: 12 });
+  }
+
+  // 各オプションの位置を更新
+  options.forEach((option, index) => {
+    const historyIndex = (index + 1) * OPTION_DELAY;
+    if (playerHistory.length > historyIndex) {
+      const targetPos = playerHistory[historyIndex];
+      option.x = targetPos.x;
+      option.y = targetPos.y + player.height / 2; // プレイヤーの中心の高さに合わせる
+    }
+  });
+
+  // 古い履歴を削除して配列が無限に大きくならないようにする
+  if (playerHistory.length > (options.length + 1) * OPTION_DELAY + 10) {
+    playerHistory.pop();
+  }
+
 
   // 更新処理
   const currentSpeed = INITIAL_PLAYER_SPEED + activePowerUps.speedLevel;
@@ -385,6 +471,7 @@ function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   updateAndDrawStars();
   drawPlayer();
+  drawOptions();
   drawBullets();
   drawMissiles();
   drawLaserTrails();

@@ -50,6 +50,7 @@ export class PowerUpState {
     speedLevel: 0,
     hasMissile: false,
     shotType: 'normal',
+    optionCount: 0,
   };
 
   constructor() {}
@@ -92,6 +93,14 @@ export class PowerUpState {
         break;
       case 'LASER':
         this.#activePowerUps.shotType = 'laser';
+        break;
+      case 'OPTION':
+        if (this.#activePowerUps.optionCount < 4) {
+          this.#activePowerUps.optionCount++;
+        }
+        break;
+      case 'SHIELD':
+        // TODO: シールド機能の実装
         break;
     }
 
