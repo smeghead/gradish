@@ -1,5 +1,3 @@
-
-
 /**
  * 二つの矩形が衝突しているかを判定する
  * @param {{x: number, y: number, width: number, height: number}} rect1 矩形1
@@ -16,12 +14,12 @@ export function isColliding(rect1, rect2) {
 }
 
 /**
- * 2つのオブジェクト配列間で衝突を検出し、衝突したペアのリストを返す
+ * 2つのオブジェクト配列間で衝突を検出し、衝突した各ペアに対してcallback関数を実行する
  * @param {Array<Object>} arr1 最初のオブジェクト配列
  * @param {Array<Object>} arr2 2番目のオブジェクト配列
  * @param {(obj1: Object, obj2: Object, index1: number, index2: number) => void} 衝突したペアを引数に呼び出されるcallback関数
  */
-export function findCollisions(arr1, arr2, callback) {
+export function forEachCollision(arr1, arr2, callback) {
   const collisions = [];
   for (let i = arr1.length - 1; i >= 0; i--) {
     for (let j = arr2.length - 1; j >= 0; j--) {

@@ -421,7 +421,6 @@ function gameLoop() {
     playerHistory.pop();
   }
 
-
   // 更新処理
   const currentSpeed = INITIAL_PLAYER_SPEED + activePowerUps.speedLevel;
   if (keys.ArrowUp && player.y > 0) player.y -= currentSpeed;

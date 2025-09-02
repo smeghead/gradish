@@ -1,4 +1,4 @@
-import { PowerUpState, isColliding, findCollisions } from './core.js';
+import { PowerUpState, isColliding, forEachCollision } from './core.js';
 
 function assert(condition, message) {
   if (!condition) {
@@ -8,8 +8,6 @@ function assert(condition, message) {
 }
 
 console.log('Running tests for core.js...');
-
-
 
 // --- Collision Primitive Tests ---
 console.log('  Testing: isColliding()');
@@ -43,15 +41,15 @@ function testCollisionDetection() {
 }
 testCollisionDetection();
 
-// --- findCollisions Tests ---
-console.log('  Testing: findCollisions()');
+// --- forEachCollision Tests ---
+console.log('  Testing: forEachCollision()');
 
 // Test 1: 基本的な衝突
 function testFindCollisionsBasic() {
   const arr1 = [{ x: 0, y: 0, width: 10, height: 10, id: 'A' }];
   const arr2 = [{ x: 5, y: 5, width: 10, height: 10, id: 'B' }];
   const results = [];
-  findCollisions(arr1, arr2, (obj1, obj2, index1, index2) =>
+  forEachCollision(arr1, arr2, (obj1, obj2, index1, index2) =>
     results.push({ obj1, obj2, index1, index2 })
   );
   assert(results.length === 1, 'Should find one collision');
@@ -67,7 +65,7 @@ function testFindCollisionsNone() {
   const arr1 = [{ x: 0, y: 0, width: 10, height: 10 }];
   const arr2 = [{ x: 20, y: 20, width: 10, height: 10 }];
   const results = [];
-  findCollisions(arr1, arr2, (obj1, obj2, index1, index2) =>
+  forEachCollision(arr1, arr2, (obj1, obj2, index1, index2) =>
     results.push({ obj1, obj2, index1, index2 })
   );
   assert(results.length === 0, 'Should find no collisions');
@@ -86,7 +84,7 @@ function testFindCollisionsMultiple() {
     { x: 100, y: 100, width: 10, height: 10, id: 'E' },
   ];
   const results = [];
-  findCollisions(arr1, arr2, (obj1, obj2, index1, index2) =>
+  forEachCollision(arr1, arr2, (obj1, obj2, index1, index2) =>
     results.push({ obj1, obj2, index1, index2 })
   );
   assert(results.length === 2, 'Should find two collisions');
@@ -102,7 +100,7 @@ function testFindCollisionsEmpty() {
   const arr1 = [];
   const arr2 = [{ x: 0, y: 0, width: 10, height: 10 }];
   const results = [];
-  findCollisions(arr1, arr2, (obj1, obj2, index1, index2) =>
+  forEachCollision(arr1, arr2, (obj1, obj2, index1, index2) =>
     results.push({ obj1, obj2, index1, index2 })
   );
   assert(results.length === 0, 'Should find no collisions with empty array');
