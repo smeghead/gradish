@@ -4,6 +4,7 @@
     "prettier": "^3.6.2"
   },
   "scripts": {
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "node test.js"
   }
 }
