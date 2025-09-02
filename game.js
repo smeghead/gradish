@@ -1,4 +1,4 @@
-import { PowerUpState, isColliding, findCollisions } from './core.js';
+import { PowerUpState, isColliding, forEachCollision } from './core.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -186,17 +186,21 @@ function spawnPowerUpCapsule(x, y) {
 
 function checkCollisions() {
   // 弾と敵
-  findCollisions(bullets, enemies, (bullet, enemy, bulletIndex, enemyIndex) => {
-    enemies.splice(enemyIndex, 1);
-    bullets.splice(bulletIndex, 1);
-    enemiesDestroyedSinceLastCapsule++;
-    if (enemiesDestroyedSinceLastCapsule >= CAPSULE_DROP_RATE) {
-      spawnPowerUpCapsule(enemy.x, enemy.y);
-      enemiesDestroyedSinceLastCapsule = 0;
+  forEachCollision(
+    bullets,
+    enemies,
+    (bullet, enemy, bulletIndex, enemyIndex) => {
+      enemies.splice(enemyIndex, 1);
+      bullets.splice(bulletIndex, 1);
+      enemiesDestroyedSinceLastCapsule++;
+      if (enemiesDestroyedSinceLastCapsule >= CAPSULE_DROP_RATE) {
+        spawnPowerUpCapsule(enemy.x, enemy.y);
+        enemiesDestroyedSinceLastCapsule = 0;
+      }
     }
-  });
+  );
   // ミサイルと敵
-  findCollisions(
+  forEachCollision(
     missiles,
     enemies,
     (missile, enemy, missileIndex, enemyIndex) => {
@@ -211,7 +215,7 @@ function checkCollisions() {
     width: BULLET_SPEED,
     height: 6,
   }));
-  findCollisions(
+  forEachCollision(
     hitBoxes,
     enemies,
     (hitBox, enemy, hitBoxIndex, enemyIndex) => {
@@ -224,7 +228,7 @@ function checkCollisions() {
     }
   );
   // プレイヤーとカプセル
-  findCollisions(
+  forEachCollision(
     [player],
     powerUpCapsules,
     (p, powerUpCapsule, pIndex, powerUpCapsuleIndex) => {
