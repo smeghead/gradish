@@ -1,4 +1,6 @@
-# tetris
+# Gradish
+
+A Gradius-style side-scrolling shooter.
 
 ## Development
 
