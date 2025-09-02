@@ -46,9 +46,7 @@ export class PowerUpState {
   constructor() {}
 
   collectCapsule() {
-    if (this.#cursorIndex < this.#meter.length - 1) {
-      this.#cursorIndex++;
-    }
+    this.#cursorIndex = (this.#cursorIndex + 1) % this.#meter.length;
   }
 
   getMeterState() {

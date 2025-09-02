@@ -211,4 +211,28 @@ function testOptionActivation() {
 }
 testOptionActivation();
 
+function testPowerUpMeterLooping() {
+  console.log('  Testing: PowerUp meter looping');
+  const state = new PowerUpState();
+  const meterLength = state.getMeterState().meter.length;
+
+  // Collect capsules to reach the end of the meter
+  for (let i = 0; i < meterLength; i++) {
+    state.collectCapsule();
+  }
+  // At this point, the cursor should be at the last item (SHIELD, index 5)
+  assert(
+    state.getMeterState().currentIndex === meterLength - 1,
+    'Cursor should be at the last item'
+  );
+
+  // Collect one more capsule to test looping
+  state.collectCapsule();
+  assert(
+    state.getMeterState().currentIndex === 0,
+    'Cursor should loop back to the first item'
+  );
+}
+testPowerUpMeterLooping();
+
 console.log('✅ All tests passed!');
