@@ -1,4 +1,4 @@
-import { add, PowerUpState, isColliding, findCollisions } from './core.js';
+import { PowerUpState, isColliding, findCollisions } from './core.js';
 
 function assert(condition, message) {
   if (!condition) {
@@ -9,9 +9,7 @@ function assert(condition, message) {
 
 console.log('Running tests for core.js...');
 
-// --- Dummy Function Tests ---
-console.log('  Testing: add()');
-assert(add(2, 3) === 5, '2 + 3 should equal 5');
+
 
 // --- Collision Primitive Tests ---
 console.log('  Testing: isColliding()');
