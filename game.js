@@ -401,8 +401,27 @@ function drawPowerUpMeter() {
 // --- ゲームループ ---
 function gameLoop() {
   // --- 履歴とオプションの管理 ---
-  playerHistory.unshift({ x: player.x, y: player.y });
-  const OPTION_DELAY = 15; // オプション間の遅延フレーム
+  const MIN_RECORD_DISTANCE = 10; // この距離以上移動したら履歴に記録
+  const lastHistoryPos = playerHistory[0];
+  const shouldRecord =
+    !lastHistoryPos ||
+    Math.hypot(player.x - lastHistoryPos.x, player.y - lastHistoryPos.y) >
+      MIN_RECORD_DISTANCE;
+
+  if (shouldRecord) {
+    // --- 履歴とオプションの管理 ---
+  const MIN_RECORD_DISTANCE = 10; // この距離以上移動したら履歴に記録
+  const lastHistoryPos = playerHistory[0];
+  const shouldRecord =
+    !lastHistoryPos ||
+    Math.hypot(player.x - lastHistoryPos.x, player.y - lastHistoryPos.y) >
+      MIN_RECORD_DISTANCE;
+
+  if (shouldRecord) {
+    playerHistory.unshift({ x: player.x, y: player.y });
+  }
+  }
+  const OPTION_DELAY = 3; // オプション間の遅延フレーム
   const activePowerUps = powerUpState.getActivePowerUps();
 
   // 有効なオプションの数に合わせて `options` 配列を調整
